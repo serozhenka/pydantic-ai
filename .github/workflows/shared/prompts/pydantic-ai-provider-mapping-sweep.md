@@ -70,7 +70,7 @@ be triggered by code you wrote and observed to fail.
 
 ## Deduplication — mandatory BEFORE filing an issue
 
-**Before any code exploration**, search for existing issues using the MCP
+Search for existing issues using the MCP
 GitHub tools (not `gh` CLI — it's blocked by the firewall proxy):
 
 ```

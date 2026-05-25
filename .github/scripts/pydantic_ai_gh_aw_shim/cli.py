@@ -302,13 +302,15 @@ def _trim_tool_results(messages: list[ModelMessage]) -> list[ModelMessage]:
             truncate_count,
             bytes_saved,
         )
-        emit({
-            'type': 'system',
-            'subtype': 'compaction_trim',
-            'deduped_reads': dedup_count,
-            'truncated_results': truncate_count,
-            'chars_saved': bytes_saved,
-        })
+        emit(
+            {
+                'type': 'system',
+                'subtype': 'compaction_trim',
+                'deduped_reads': dedup_count,
+                'truncated_results': truncate_count,
+                'chars_saved': bytes_saved,
+            }
+        )
         return out
     return messages
 
@@ -346,14 +348,16 @@ async def _compact_history(ctx: RunContext[None], messages: list[ModelMessage]) 
         len(middle),
         COMPACTION_KEEP_RECENT,
     )
-    emit({
-        'type': 'system',
-        'subtype': 'compaction_summary_start',
-        'history_chars': size,
-        'history_messages': len(trimmed),
-        'middle_messages': len(middle),
-        'keep_recent': COMPACTION_KEEP_RECENT,
-    })
+    emit(
+        {
+            'type': 'system',
+            'subtype': 'compaction_summary_start',
+            'history_chars': size,
+            'history_messages': len(trimmed),
+            'middle_messages': len(middle),
+            'keep_recent': COMPACTION_KEEP_RECENT,
+        }
+    )
     # Preserve any earlier-round synthetic at the head of the middle so a
     # fallback (`return [prior_synthetic, *tail]`) doesn't silently forget
     # the entire run's compacted history.
@@ -384,7 +388,14 @@ async def _compact_history(ctx: RunContext[None], messages: list[ModelMessage]) 
     middle_size = _history_size_chars(middle)
     if len(summary) >= middle_size:
         logger.info('compaction summary discarded (%d >= %d chars); falling back', len(summary), middle_size)
-        emit({'type': 'system', 'subtype': 'compaction_summary_discarded', 'summary_chars': len(summary), 'middle_chars': middle_size})
+        emit(
+            {
+                'type': 'system',
+                'subtype': 'compaction_summary_discarded',
+                'summary_chars': len(summary),
+                'middle_chars': middle_size,
+            }
+        )
         return [prior_synthetic, *tail] if prior_synthetic else tail
     logger.info(
         'compaction summary done: %d middle messages (%d chars) -> %d-char summary',
@@ -392,15 +403,17 @@ async def _compact_history(ctx: RunContext[None], messages: list[ModelMessage]) 
         middle_size,
         len(summary),
     )
-    emit({
-        'type': 'system',
-        'subtype': 'compaction_summary_done',
-        'middle_messages': len(middle),
-        'middle_chars': middle_size,
-        'summary_chars': len(summary),
-        'input_tokens': sub_usage.input_tokens,
-        'output_tokens': sub_usage.output_tokens,
-    })
+    emit(
+        {
+            'type': 'system',
+            'subtype': 'compaction_summary_done',
+            'middle_messages': len(middle),
+            'middle_chars': middle_size,
+            'summary_chars': len(summary),
+            'input_tokens': sub_usage.input_tokens,
+            'output_tokens': sub_usage.output_tokens,
+        }
+    )
     synthetic = ModelRequest(parts=[UserPromptPart(content=f'{_SYNTHETIC_SUMMARY_TAG}\n{summary}')])
     return [synthetic, *tail]
 
@@ -528,18 +541,14 @@ def configure_logging() -> None:
 def configure_observability() -> None:
     """Wire pydantic-ai + httpx + mcp instrumentation to Logfire/OTLP if configured."""
     write_token = os.environ.get('LOGFIRE_WRITE_TOKEN') or os.environ.get('LOGFIRE_TOKEN')
-    if not (
-        os.environ.get('OTEL_EXPORTER_OTLP_ENDPOINT')
-        or os.environ.get('GH_AW_OTLP_ENDPOINTS')
-        or write_token
-    ):
+    if not (os.environ.get('OTEL_EXPORTER_OTLP_ENDPOINT') or os.environ.get('GH_AW_OTLP_ENDPOINTS') or write_token):
         return
     try:
         logfire.configure(
             service_name=os.environ.get('OTEL_SERVICE_NAME', 'gh-aw'),
             send_to_logfire='if-token-present',
             console=False,
-            **(({'token': write_token}) if write_token else {}),
+            token=write_token or None,
         )
         logfire.instrument_pydantic_ai(include_content=True, include_binary_content=True)
         logfire.instrument_httpx(capture_all=True)

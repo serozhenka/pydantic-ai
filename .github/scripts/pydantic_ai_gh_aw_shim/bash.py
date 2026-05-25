@@ -10,7 +10,7 @@ from .shared import clip, workspace
 # even if the AWF sandbox launches with a minimal inherited PATH.
 _STANDARD_PATHS = [
     '/opt/hostedtoolcache/gh-aw-tools/current/x64/bin',  # rg + uv installed by install-sandbox-tools.sh
-    '/tmp/gh-aw/bin',       # fallback; launcher lives here too
+    '/tmp/gh-aw/bin',  # fallback; launcher lives here too
     '/usr/local/bin',
     '/usr/bin',
     '/bin',

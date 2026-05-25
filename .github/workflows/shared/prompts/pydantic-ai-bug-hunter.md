@@ -78,7 +78,7 @@ weak or speculative issue is worse than filing nothing.
 
 ### Deduplication — mandatory BEFORE filing an issue
 
-**Before any code exploration**, search for existing issues that might overlap
+Search for existing issues that might overlap
 your run's scope. Use the MCP GitHub tools (not the `gh` CLI, which is blocked
 by the firewall proxy):
 

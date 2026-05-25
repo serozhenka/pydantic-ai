@@ -62,7 +62,7 @@ only "looks risky" in the diff is not a finding.
 
 ## Deduplication — mandatory BEFORE filing an issue
 
-**Before any code exploration**, search for existing issues using the MCP
+Search for existing issues using the MCP
 GitHub tools (not `gh` CLI — it's blocked by the firewall proxy):
 
 ```
